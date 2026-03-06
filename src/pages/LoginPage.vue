@@ -27,6 +27,8 @@ const handleLogin = async () => {
   error.value = ''
 
   try {
+    console.log('Attempting login for user:', username.value)
+    
     // Check if Supabase is configured
     const { data, error: dbError } = await supabase
       .from('users')
@@ -34,30 +36,27 @@ const handleLogin = async () => {
       .eq('username', username.value)
       .single()
 
-    if (dbError && dbError.message.includes('Supabase not configured')) {
-      // Demo mode - allow any login for testing
-      const demoUser = {
-        id: 'demo-user-' + Date.now(),
-        username: username.value,
-        role: 'cashier'
-      }
-      localStorage.setItem('user', JSON.stringify(demoUser))
-      router.push('/sales')
+    console.log('Supabase response:', { data, dbError })
+
+    if (dbError) {
+      error.value = 'Database connection failed. Please check your Supabase configuration.'
+      console.error('Login error:', dbError)
       return
     }
 
-    if (dbError) {
-      error.value = 'Login failed. Please try again.'
-      console.error('Login error:', dbError)
-    } else if (!data) {
+    if (!data) {
       error.value = 'Invalid username or password'
+      console.log('No user found')
     } else {
+      console.log('User found, logging in:', data)
       // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(data))
+      console.log('User stored in localStorage')
       router.push('/sales')
+      console.log('Navigation triggered')
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred'
+    error.value = 'An unexpected error occurred. Please check your Supabase configuration.'
     console.error('Login error:', err)
   } finally {
     isLoading.value = false
@@ -104,137 +103,207 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="row justify-content-center">
-      <div class="col-md-6 col-lg-4">
-        <div class="card shadow-lg border-0">
-          <div class="card-body p-4">
-            <div class="text-center mb-4">
-              <h2 class="text-primary fw-bold">Lalasa Bakery POS</h2>
-              <p class="text-muted">Point of Sale System</p>
-            </div>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-header text-center mb-4">
+        <h1 class="login-title">Welcome</h1>
+        <p class="login-subtitle">Lalasa Bakery POS System</p>
+      </div>
 
-            <form @submit.prevent="handleLogin">
-              <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input 
-                  type="text" 
-                  class="form-control form-control-lg" 
-                  id="username"
-                  v-model="username"
-                  placeholder="Enter your username"
-                  required
-                >
-              </div>
-
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input 
-                  type="password" 
-                  class="form-control form-control-lg" 
-                  id="password"
-                  v-model="password"
-                  placeholder="Enter your password"
-                  required
-                >
-              </div>
-
-              <div v-if="error" class="alert alert-danger" role="alert">
-                {{ error }}
-              </div>
-
-              <div class="d-grid gap-2">
-                <button 
-                  type="submit" 
-                  class="btn btn-primary btn-lg"
-                  :disabled="isLoading"
-                >
-                  <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ isLoading ? 'Signing In...' : 'Sign In' }}
-                </button>
-                
-                <button 
-                  type="button" 
-                  class="btn btn-outline-primary btn-lg"
-                  @click="handleRegister"
-                  :disabled="isLoading"
-                >
-                  <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ isLoading ? 'Creating Account...' : 'Create Account' }}
-                </button>
-              </div>
-            </form>
-
-            <div class="text-center mt-3">
-              <div class="alert alert-warning" role="alert">
-                <strong>⚠️ Demo Mode Active</strong><br>
-                <small class="text-muted">
-                  Replace Supabase credentials in .env.local to exit demo mode and use full database features.
-                </small>
-              </div>
-              <small class="text-muted">
-                Note: This is a demo system. In production, use proper authentication.
-              </small>
-            </div>
-          </div>
+      <form @submit.prevent="handleLogin" class="login-form">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="username"
+            v-model="username"
+            placeholder="Enter your username"
+            required
+          >
         </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password"
+            v-model="password"
+            placeholder="Enter your password"
+            required
+          >
+        </div>
+
+        <div v-if="error" class="alert alert-danger" role="alert">
+          {{ error }}
+        </div>
+
+        <div class="d-grid gap-2">
+          <button 
+            type="submit" 
+            class="btn btn-primary btn-lg"
+            :disabled="isLoading"
+          >
+            <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-outline-primary btn-lg"
+            @click="handleRegister"
+            :disabled="isLoading"
+          >
+            <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="login-footer text-center mt-3">
+        <small class="text-muted">
+          Please use your credentials to access the POS system.
+        </small>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.login-container {
-  min-height: 80vh;
+.login-page {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2rem 0;
+  flex: 1;
 }
 
-.card {
-  border-radius: 12px;
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.card-body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px;
+.login-header {
+  margin-bottom: 2rem;
+}
+
+.login-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.login-form {
+  margin-bottom: 2rem;
 }
 
 .form-control {
-  border-radius: 8px;
-  border: none;
-  box-shadow: none;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+  outline: none;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
 }
 
 .btn {
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
 }
 
-.btn-outline-primary {
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+.btn-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  border: none;
   color: white;
 }
 
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+.btn-outline-primary {
+  border: 2px solid #0d6efd;
+  color: #0d6efd;
+  background: transparent;
+}
+
 .btn-outline-primary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #0d6efd;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
 }
 
 .alert {
-  border-radius: 8px;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 1rem;
+}
+
+.login-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.login-footer small {
+  color: #6c757d;
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
-  .login-container {
-    padding: 1rem;
+  .login-page {
+    padding: 1rem 0;
+    min-height: 50vh;
   }
   
-  .card {
+  .login-card {
+    padding: 1.5rem;
     margin: 0 1rem;
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+  }
+  
+  .login-subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet responsive adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .login-card {
+    padding: 2.5rem;
   }
 }
 </style>
