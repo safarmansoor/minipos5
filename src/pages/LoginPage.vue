@@ -166,6 +166,12 @@ const handleRegister = async () => {
             </form>
 
             <div class="text-center mt-3">
+              <div class="alert alert-warning" role="alert">
+                <strong>⚠️ Demo Mode Active</strong><br>
+                <small class="text-muted">
+                  Replace Supabase credentials in .env.local to exit demo mode and use full database features.
+                </small>
+              </div>
               <small class="text-muted">
                 Note: This is a demo system. In production, use proper authentication.
               </small>

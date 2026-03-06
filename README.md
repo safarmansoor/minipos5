@@ -63,12 +63,33 @@ npm run dev
 
 ### 3. Quick Start (Demo Mode)
 
-**No Supabase required!** The app includes a demo mode that works immediately:
+**⚠️ Demo Mode Active** - The app is currently in demo mode. To exit demo mode:
 
+1. **Create Supabase Project**:
+   - Go to [supabase.com](https://supabase.com)
+   - Create a new project
+   - Wait for the database to be ready
+
+2. **Setup Database**:
+   - Go to your Supabase project
+   - Navigate to SQL Editor
+   - Run the SQL from `supabase-setup.sql` file
+
+3. **Get API Keys**:
+   - Go to Settings > API
+   - Copy your Project URL and anon public key
+
+4. **Update .env.local**:
+   - Replace the placeholder credentials in `.env.local` with your actual Supabase credentials
+   - Remove the demo mode warnings
+
+5. **Restart the app**: `npm run dev`
+
+**Or use Demo Mode immediately**:
 1. **Start the app**: `npm run dev`
 2. **Open browser**: Go to `http://localhost:3000/minipos5/`
 3. **Login**: Use any username and password
-4. **Start using**: The app will work in demo mode with mock data
+4. **Note**: Data won't be saved to database in demo mode
 
 ### 4. Full Setup with Supabase (Optional)
 
@@ -168,27 +189,84 @@ minipos5/
 
 ## Deployment to GitHub Pages
 
+### Option 1: Manual Deployment (Recommended)
+
 1. **Build the project**:
    ```bash
    npm run build
    ```
 
-2. **Configure GitHub Pages**:
+2. **Create GitHub Repository**:
+   - Go to [GitHub](https://github.com) and create a new repository named `minipos5`
+   - Copy the repository URL
+
+3. **Push to GitHub**:
+   ```bash
+   git remote add origin https://github.com/yourusername/minipos5.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+4. **Deploy to GitHub Pages**:
+   ```bash
+   # Build the project
+   npm run build
+   
+   # Create and push to gh-pages branch
+   git checkout --orphan gh-pages
+   git add dist
+   git commit -m "Deploy to GitHub Pages"
+   git push origin gh-pages
+   
+   # Switch back to main branch
+   git checkout main
+   ```
+
+5. **Configure GitHub Pages**:
    - Go to your GitHub repository settings
    - Navigate to Pages section
    - Set source to "Deploy from a branch"
    - Select `gh-pages` branch
    - Set folder to `/ (root)`
 
-3. **Deploy**:
-   ```bash
-   npm run build
-   git add dist
-   git commit -m "Deploy to GitHub Pages"
-   git subtree push --prefix dist origin gh-pages
-   ```
-
 The app will be available at: `https://yourusername.github.io/minipos5/`
+
+### Option 2: Using GitHub Actions (Advanced)
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+    - run: npm install
+    - run: npm run build
+    - uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+```
+
+### Option 3: Using GitHub CLI (If Available)
+
+```bash
+# Install GitHub CLI if not available
+# Then run:
+gh repo create minipos5 --public --push
+npm run build
+gh pages deploy dist --branch gh-pages
+```
 
 ## Security Notes
 

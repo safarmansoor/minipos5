@@ -6,8 +6,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 let supabaseClient
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL and/or Anon Key not configured. Please update .env.local file.')
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your-project') || supabaseAnonKey.includes('your_anon_public_key')) {
+  console.warn('⚠️ DEMO MODE: Supabase not configured. Replace credentials in .env.local to exit demo mode.')
   
   // Create a mock client for development without Supabase
   supabaseClient = {
@@ -15,26 +15,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
       select: () => ({
         order: () => ({
           data: [],
-          error: null
+          error: { message: 'Demo Mode: No data available. Set up Supabase to use full features.' }
         })
       }),
       insert: () => ({
         single: () => ({
           data: null,
-          error: { message: 'Supabase not configured. Please set up .env.local file.' }
+          error: { message: 'Demo Mode: Cannot save data. Set up Supabase to use full features.' }
         })
       }),
       update: () => ({
         eq: () => ({
           single: () => ({
             data: null,
-            error: { message: 'Supabase not configured. Please set up .env.local file.' }
+            error: { message: 'Demo Mode: Cannot update data. Set up Supabase to use full features.' }
           })
         })
       }),
       delete: () => ({
         eq: () => ({
-          error: { message: 'Supabase not configured. Please set up .env.local file.' }
+          error: { message: 'Demo Mode: Cannot delete data. Set up Supabase to use full features.' }
         })
       }),
       auth: {
@@ -46,6 +46,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
     })
   }
 } else {
+  console.log('✅ Connected to Supabase database')
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
 }
 
